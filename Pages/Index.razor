@@ -1,0 +1,99 @@
+﻿@page "/"
+
+
+<SfKanban DataSource="@Tasks" KeyField="Status">
+    <KanbanColumns>
+        <KanbanColumn HeaderText="To Do" KeyField="@(new List<string>() {"Open"})" AllowToggle="true" IsExpanded="true">
+            <Template>
+                @{
+                    KanbanColumn column = (KanbanColumn)context;
+                    <div class="e-header-warp">
+                        <span class="header-icon e-icons @column.KeyField[0]"></span>
+                        <span class="e-header-text">@column.HeaderText</span>
+                    </div>
+                }
+            </Template>
+        </KanbanColumn>
+        <KanbanColumn HeaderText="In Progress" KeyField="@(new List<string>() {"InProgress"})" AllowToggle="true" IsExpanded="true">
+            <Template>
+                @{
+                    KanbanColumn column = (KanbanColumn)context;
+                    <div class="e-header-warp">
+                        <span class="header-icon e-icons @column.KeyField[0]"></span>
+                        <span class="e-header-text">@column.HeaderText</span>
+                    </div>
+                }
+            </Template>
+        </KanbanColumn>
+        <KanbanColumn HeaderText="Testing" KeyField="@(new List<string>() {"Review"})" AllowToggle="true" IsExpanded="true">
+            <Template>
+                @{
+                    KanbanColumn column = (KanbanColumn)context;
+                    <div class="e-header-warp">
+                        <span class="header-icon e-icons @column.KeyField[0]"></span>
+                        <span class="e-header-text">@column.HeaderText</span>
+                    </div>
+                }
+            </Template>
+        </KanbanColumn>
+        <KanbanColumn HeaderText="Done" KeyField="@(new List<string>() {"Close"})" AllowToggle="true" IsExpanded="false">
+            <Template>
+                @{
+                    KanbanColumn column = (KanbanColumn)context;
+                    <div class="e-header-warp">
+                        <span class="header-icon e-icons @column.KeyField[0]"></span>
+                        <span class="e-header-text">@column.HeaderText</span>
+                    </div>
+                }
+            </Template>
+        </KanbanColumn>
+    </KanbanColumns>
+    <KanbanStackedHeader Text="Development Phase" KeyFields="@(new List<string>() {"InProgress", "Review"})"></KanbanStackedHeader>
+    <KanbanDialogSettings>
+        <KanbanDialogSettingsFields>
+            <KanbanDialogSettingsField Text="Status" Key="Status" Type=DialogFieldType.DropDown></KanbanDialogSettingsField>
+            <KanbanDialogSettingsField Text="Summary" Key="Summary" Type=DialogFieldType.TextArea></KanbanDialogSettingsField>
+            <KanbanDialogSettingsField Text="Assignee" Key="Assignee" Type=DialogFieldType.TextBox></KanbanDialogSettingsField>
+        </KanbanDialogSettingsFields>
+    </KanbanDialogSettings>
+    <KanbanCardSettings HeaderField="Title" ContentField="Summary" GrabberField="Color" SelectionType="SelectionType.Multiple"/>
+</SfKanban>
+
+@code {
+    public List<DynmamicDicrionary> Tasks { get; set; } = new List<DynmamicDicrionary>();
+
+    protected override void OnInitialized()
+    {
+        Tasks = Enumerable.Range(1, 15).Select((x) => 
+        {
+            dynamic Obj = new DynmamicDicrionary();
+            Obj.Title = "Task " + x;
+            Obj.Assignee =  (new string[] { "George", "Max", "Daniel", "Tim" })[new Random().Next(4)];
+            Obj.Color = (new string[] { "#7d7297", "#8b447a", "#27AE60", "#cc0000", "#8b447a" })[new Random().Next(5)];
+            Obj.Status = (new string[] { "Open", "InProgress", "Review", "Close" })[new Random().Next(4)];
+            Obj.Summary = (new string[] { "Analyze SQL server 2008 connection.", "Fix the issues reported in Safari browser.", "Improve application performance", "Analyze grid control." })[new Random().Next(4)];
+
+            return Obj;
+        }).Cast<DynmamicDicrionary>().ToList<DynmamicDicrionary>();
+    }
+
+    public class DynmamicDicrionary : DynamicObject
+    {
+        Dictionary<string, object> TaskDictionary = new Dictionary<string, object>();
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            var name = binder.Name;
+            return TaskDictionary.TryGetValue(name, out result);
+        }
+        public override bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            TaskDictionary[binder.Name] = value;
+            return true;
+        }
+
+        public override IEnumerable<string> GetDynamicMemberNames()
+        {
+            return this.TaskDictionary?.Keys;
+        }
+    }
+}
